@@ -157,6 +157,7 @@ class NetworkAwareness(app_manager.RyuApp):
 		if not self.best_paths_computed:
 			self.shortest_paths = self.all_shortest_paths(self.graph)
 			self.best_paths = self.get_best_paths(self.shortest_paths)
+			print "self.best_paths:", self.best_paths
 			self.logger.info("[GET NETWORK TOPOLOGY]")
 			self.logger.info("[BEST PATHS ARE READY]")
 			self.best_paths_computed = True
@@ -241,7 +242,7 @@ class NetworkAwareness(app_manager.RyuApp):
 				else:
 					paths[src].setdefault(dst, [])
 					# paths[src][dst] = nx.shortest_simple_paths(graph, source=src, target=dst, weight='cost')   # Too high complexity.
-					paths[src][dst] = nx.all_simple_paths(graph, source=src, target=dst, cutoff=setting.HopLimit_NUM)
+					paths[src][dst] = nx.all_simple_paths(graph, source=src, target=dst, cutoff=setting.HopLimit_NUM - 1)
 		return paths
 
 	def get_total_cost(self, path):
