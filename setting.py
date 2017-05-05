@@ -17,9 +17,12 @@
 # limitations under the License.
 
 # Set the weights of the restrictions.
-MustEdge_WEIGHT = 0.4
-ForbidEdge_WEIGHT = 0.2
-MustNode_WEIGHT = 0.4
+# WEIGHTS = [0.25, 0.25, 0.25, 0.25]
+WEIGHTS = [0.1, 0.3, 0.3, 0.3]
+HopLimit_WEIGHT = WEIGHTS[0]
+MustEdge_WEIGHT = WEIGHTS[1]
+ForbidEdge_WEIGHT = WEIGHTS[2]
+MustNode_WEIGHT = WEIGHTS[3]
 
 # Specify the detailed settings of the restrictions.
 # Hop Limit
@@ -33,6 +36,9 @@ ForbidEdge = [['s11', 's12']]
 # MustNode
 MustNode_NUM = 2
 MustNode = ['s7', 's12']
+
+# If don't care about the limitation of Hop
+Hop_MAX = 12
 
 # Input the network topology.
 LINK_BANDWIDTH = 1000   # Link bandwidth (unit: Kbit/s).
@@ -62,7 +68,6 @@ host_links = [
 ['s6', 'h6'], ['s7', 'h7'], ['s8', 'h8'], ['s9', 'h9'], ['s10', 'h10'], ['s11', 'h11'],
 ['s12', 'h12'], ['s13', 'h13'], ['s14', 'h14'], ['s15', 'h15'], ['s16', 'h16'], ['s200', 'h200']
 ]
-
 
 # Common setting of the SDN controller.
 DISCOVERY_PERIOD = 10   # For discovering network topology.

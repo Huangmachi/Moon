@@ -67,9 +67,9 @@ class ShortestForwarding(app_manager.RyuApp):
 
 	@set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
 	def _packet_in_handler(self, ev):
-		'''
+		"""
 			In packet_in handler, we need to learn access_table by ARP and IP packets.
-		'''
+		"""
 		msg = ev.msg
 		pkt = packet.Packet(msg.data)
 		arp_pkt = pkt.get_protocol(arp.arp)

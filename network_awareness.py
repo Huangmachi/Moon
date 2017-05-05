@@ -78,10 +78,14 @@ class NetworkAwareness(app_manager.RyuApp):
 		self.discover_thread = hub.spawn(self._discover)
 
 	def _discover(self):
+		i = 0
 		while True:
-			self.get_topology(None)
 			self.show_topology()
+			if i == 2:
+				self.get_topology(None)
+				i = 0
 			hub.sleep(setting.DISCOVERY_PERIOD)
+			i = i + 1
 
 	def add_flow(self, dp, priority, match, actions, idle_timeout=0, hard_timeout=0):
 		ofproto = dp.ofproto
@@ -155,8 +159,11 @@ class NetworkAwareness(app_manager.RyuApp):
 		self.create_access_ports()
 		self.graph = self.get_graph(self.link_to_port.keys())
 		if not self.best_paths_computed:
+			compute_start_time = time.time()
 			self.shortest_paths = self.all_shortest_paths(self.graph)
 			self.best_paths = self.get_best_paths(self.shortest_paths)
+			elapsed_time = time.time() - compute_start_time
+			print "elapsed_time:", elapsed_time
 			print "self.best_paths:", self.best_paths
 			self.logger.info("[GET NETWORK TOPOLOGY]")
 			self.logger.info("[BEST PATHS ARE READY]")
@@ -213,9 +220,10 @@ class NetworkAwareness(app_manager.RyuApp):
 			src = link.src
 			dst = link.dst
 			self.link_to_port[(src.dpid, dst.dpid)] = (src.port_no, dst.port_no)
-			# Find the access ports and interior ports.
-			if (link.src.dpid in self.switches) and (link.dst.dpid in self.switches):
+			# Find the interior ports.
+			if link.src.dpid in self.switches:
 				self.interior_ports[link.src.dpid].add(link.src.port_no)
+			if link.dst.dpid in self.switches:
 				self.interior_ports[link.dst.dpid].add(link.dst.port_no)
 
 	def create_access_ports(self):
@@ -242,7 +250,11 @@ class NetworkAwareness(app_manager.RyuApp):
 				else:
 					paths[src].setdefault(dst, [])
 					# paths[src][dst] = nx.shortest_simple_paths(graph, source=src, target=dst, weight='cost')   # Too high complexity.
-					paths[src][dst] = nx.all_simple_paths(graph, source=src, target=dst, cutoff=setting.HopLimit_NUM - 1)
+					if setting.HopLimit_WEIGHT < min(setting.MustEdge_WEIGHT / setting.MustEdge_NUM, setting.ForbidEdge_WEIGHT / setting.ForbidEdge_NUM, setting.MustEdge_WEIGHT / setting.MustNode_NUM):
+						cutoff = setting.Hop_MAX - 1
+					else:
+						cutoff = setting.HopLimit_NUM - 1
+					paths[src][dst] = nx.all_simple_paths(graph, source=src, target=dst, cutoff=cutoff)
 		return paths
 
 	def get_total_cost(self, path):
@@ -271,6 +283,8 @@ class NetworkAwareness(app_manager.RyuApp):
 					weight_dict[src].setdefault(dst, {})
 					for path in shortest_paths[src][dst]:
 						weight = 0
+						if len(path) <= setting.HopLimit_NUM:
+							weight += setting.HopLimit_WEIGHT
 						if setting.MustEdge_NUM != 0:
 							for edge in setting.MustEdge:
 								if ("%s, %s" % (edge[0][1:], edge[1][1:]) in "%s" % path) or ("%s, %s" % (edge[1][1:], edge[0][1:]) in "%s" % path):
