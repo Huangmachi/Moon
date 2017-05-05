@@ -36,8 +36,7 @@ Firstly, start up the network. An example is shown below:
 
 And then, open a new ternimal, and run the application. An example is shown below:
 
-    $ cd ryu
-    $ ryu-manager --observe-links ryu/app/Moon/SDN.py
+    $ ryu-manager --observe-links ryu/ryu/app/Moon/SDN.py
 
 NOTE: After these, we should wait for the network to complete the initiation for several seconds, because LLDP needs some time to discovery the network topology. We can't operate the network until "[GET NETWORK TOPOLOGY]" and "[BEST PATHS ARE READY]" are printed in the terminal of the Ryu controller, otherwise some errors will occur.
 
